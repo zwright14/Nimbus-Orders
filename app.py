@@ -9,8 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from application_services.imdb_artists_resource import IMDBArtistResource
-from application_services.UsersResource.user_service import UserResource
+from application_services.Orders.orders_service import Orders
 
 
 app = Flask(__name__)
@@ -23,21 +22,17 @@ CORS(app)
 def hello_world():
     return '<u>Hello World!</u>'
 
-
-@app.route('/imdb/artists/<prefix>')
-def get_artists_by_prefix(prefix):
-    res = IMDBArtistResource.get_by_name_prefix(prefix)
-    rsp = Response(json.dumps(res), status=200, content_type="application/json")
-    return rsp
-
-
-@app.route('/users/<prefix>')
-def get_users(prefix):
-    # res = UserResource.get_by_template(prefix)
-    res = d_service.get_by_prefix("UserSchema", "UserResource", "UserName", prefix)
+@app.route('/orders')
+def get_orders():
+    res = Orders.get_by_template(None)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
+@app.route('/orders/<orderid>')
+def get_orders_by_id(orderid):
+    res = Orders.get_by_order_id(orderid)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    return rsp
 
 @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
 def get_by_prefix(db_schema, table_name, column_name, prefix):
