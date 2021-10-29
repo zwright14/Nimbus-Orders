@@ -1,4 +1,4 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
 import database_services.RDBService as d_service
 from flask_cors import CORS
 import json
@@ -10,13 +10,21 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 from application_services.Orders.orders_service import Orders
+from middleware.notification import Notification
 
 
 app = Flask(__name__)
 CORS(app)
 
 
+@app.before_request
+def checkSecurity():
+    return '<u>Checking Security!</u>'
 
+@app.after_request
+def sendSnsNotification(response):
+    Notification.triggerNotification(request.path)
+    return response
 
 @app.route('/')
 def hello_world():
