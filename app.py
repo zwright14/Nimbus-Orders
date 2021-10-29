@@ -9,8 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from application_services.imdb_artists_resource import IMDBArtistResource
-from application_services.UsersResource.user_service import UserResource
+from application_services.Orders.orders_service import Orders
 
 
 app = Flask(__name__)
