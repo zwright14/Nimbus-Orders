@@ -1,12 +1,15 @@
 import json
 import logging
+import os
 
 from datetime import datetime
 
-from flask import Flask, Response
-from flask import request, render_template, jsonify
+from flask import Flask, Response, redirect, url_for, request, render_template, jsonify
 from flask_cors import CORS
+from flask_dance.contrib.google import make_google_blueprint, google
 
+from middleware.notification import Notification
+from middleware.security import Security
 from middleware.service_helper import _get_service_by_name, _generate_order_links, _generate_pages
 
 import utils.rest_utils as rest_utils
@@ -16,16 +19,34 @@ from pprint import pprint
 app = Flask(__name__)
 CORS(app)
 
+blueprint = make_google_blueprint(
+    client_id=os.environ.get("OAUTH_ID", None),
+    client_secret=os.environ.get("OAUTH_SECRET", None),
+    scope=["profile", "email"],
+    reprompt_consent=True
+)
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
+app.register_blueprint(blueprint, url_prefix="/userlogin")
+
 
 @app.before_request
 def checkSecurity():
-    return '<u>Checking Security!</u>'
+    return Security.checkLogin(request.path)
 
 @app.after_request
 def sendSnsNotification(response):
     Notification.triggerNotification(request.path)
     return response
-    
+
+@app.route("/")
+def index():
+    return "Logged In!"
+
+@app.route("/helloworld")
+def hello():
+    return '<u>Hello World!</u>'
+
 @app.route('/orders', methods=["GET", "POST"])
 def get_orders():
     try:
